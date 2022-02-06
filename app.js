@@ -1,5 +1,10 @@
 const SESSION_ID = window.location.pathname;
 
+if (SESSION_ID === "/" || SESSION_ID === "") {
+  let newSessionId = uuidv4();
+  window.location.href = `${window.location.origin}/${newSessionId}`;
+}
+
 MESSAGE_TYPE = {
   STATE_REQUEST: "state_request",
   STATE: "state",
@@ -8,8 +13,6 @@ MESSAGE_TYPE = {
   REVEAL_CARDS: "reveal_cards",
   RENEW_GAME: "renew_game",
 };
-
-// let socket = new WebSocket(`ws://${window.location.host}`);
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
