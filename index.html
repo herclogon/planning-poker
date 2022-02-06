@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html style="font-size: 62.5%">
+  <head>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="app.js" defer></script>
+
+    <div class="app__main-layout" id="app">
+      <div class="app__navbar">
+        <h1 @click="onRename()">{{ playerName }}</h1>
+      </div>
+      <div class="app__play-table">
+        <div>&nbsp;</div>
+        <div class="app__play-table_top-cards">
+          <div
+            class="app__table-card_layout"
+            v-for="(card, index) in cards"
+            :class="{'hidden': index % 2}"
+          >
+            <div
+              :class="
+                { 
+                    'app__table-card_back': card.bid && !isCardsOpen, 
+                    'app__table-card_face': card.bid === null || isCardsOpen,
+                    'app__table-card_open': card.bid && isCardsOpen
+                }"
+            >
+              <span v-if="isCardsOpen && card.bid">{{ card.bid }}</span>
+            </div>
+            <div class="app__table-card_player-name" :title="card.playerName">
+              {{ card.playerName }}
+            </div>
+          </div>
+        </div>
+        <div>&nbsp;</div>
+        <div>&nbsp;</div>
+        <div class="app__play-table_table">
+          <button
+            v-if="!isCardsOpen"
+            class="app__play-table_table-button"
+            @click="onRevealCards()"
+          >
+            Reveal cards
+          </button>
+          <button
+            v-if="isCardsOpen"
+            class="app__play-table_table-button"
+            @click="onStartNewVoting()"
+          >
+            Start new voting
+          </button>
+        </div>
+        <div>&nbsp;</div>
+        <div>&nbsp;</div>
+        <div class="app__play-table_bottom-cards">
+          <div
+            class="app__table-card_layout"
+            v-for="(card, index) in cards"
+            :class="{'hidden': index % 2 == 0}"
+          >
+            <div
+              :class="
+            { 
+                'app__table-card_back': card.bid && !isCardsOpen, 
+                'app__table-card_face': card.bid === null || isCardsOpen,
+                'app__table-card_open': card.bid && isCardsOpen
+            }"
+            >
+              <span v-if="isCardsOpen && card.bid">{{ card.bid }}</span>
+            </div>
+            <div class="app__table-card_player-name">{{ card.playerName }}</div>
+          </div>
+        </div>
+        <div>&nbsp;</div>
+      </div>
+      <div v-if="isCardsOpen" class="app__avr-score">
+        Average: {{ averageScore() }}
+      </div>
+
+      <div v-if="!isCardsOpen" class="app__cards-selector">
+        <ul class="app__cards-selector_list">
+          <li class="app__player-card" v-for="variant in variants">
+            <button
+              class="app__player-card_button"
+              translate="no"
+              @click="onVote(variant)"
+              :class="{ 'app__player-card_button_selected': variant === vote }"
+            >
+              <span>{{ variant }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
