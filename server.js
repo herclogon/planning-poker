@@ -1,8 +1,8 @@
 var WebSocketServer = require("ws").Server; // webSocket library
 
 // configure the webSocket server:
-const wssPort = process.env.PORT || 8081; // port number for the webSocket server
-const wss = new WebSocketServer({ port: wssPort }); // the webSocket server
+const wsPort = process.env.WS_PORT || 8081; // port number for the webSocket server
+const ws = new WebSocketServer({ port: wsPort }); // the webSocket server
 var clients = new Array(); // list of client connections
 var clientsTable = {}; // list of client connections
 
@@ -25,7 +25,6 @@ function handleConnection(client, request) {
     console.log("connection closed");
   }
 
-  // if a client sends a message, print it out:
   function clientResponse(data) {
     let message = JSON.parse(data);
 
@@ -55,17 +54,19 @@ function broadcast(sessionId, data) {
   }
 }
 
-// listen for clients and handle them:
-wss.on("connection", handleConnection);
+// Listen for clients and handle them.
+ws.on("connection", handleConnection);
+console.log(`Websocket server is running on port ${wsPort}...`);
 
+// Starting simple HTTP server for static files.
 var http = require("http");
 var fs = require("fs");
 var path = require("path");
 
+const httpPort = process.env.WS_PORT || 8080; // port number for the webSocket server
+
 http
   .createServer(function (request, response) {
-    console.log("request starting...");
-
     var filePath = "." + request.url;
     if (filePath == "./") filePath = "./index.html";
 
@@ -93,7 +94,7 @@ http
     }
 
     fs.readFile(filePath, function (error, content) {
-      console.log("error", error);
+      console.error("Content read error", error);
       if (error) {
         if (error.code == "ENOENT") {
           fs.readFile("./index.html", function (error, content) {
@@ -115,5 +116,5 @@ http
       }
     });
   })
-  .listen(8080);
-console.log("Server running...");
+  .listen(httpPort);
+console.log(`HTTP server is running on port ${httpPort}...`);

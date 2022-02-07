@@ -8,19 +8,16 @@ body {
 .app__main-layout {
   display: flex;
   height: 100vh;
-  /* background-color: burlywood; */
   flex-direction: column;
 }
 
 .app__navbar {
   height: 80px;
   width: 100%;
-  /* background-color: aquamarine; */
 }
 
 .app__play-table-container {
   flex-grow: 1;
-  /* align-items: ; */
 }
 
 .app__play-table {
@@ -39,21 +36,21 @@ body {
 }
 
 .app__play-table_table {
+  align-items: center;
   background: #d7e9ff;
   border-radius: 2.8rem;
+  display: flex;
   grid-area: table;
-  min-width: 16rem;
+  height: 16rem;
+  justify-content: center;
+  min-height: 16rem;
+  min-width: 33.8rem;
   padding: 0 1.6rem;
   position: relative;
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  /* max-width: 128rem; */
 }
 
 .app__cards-selector {
   height: 128px;
-  /* background-color: aquamarine; */
 }
 
 .app__player-card {
@@ -117,6 +114,10 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: center;
+}
+
+.app__play-table_top-cards {
+  padding-bottom: 1.6rem;
 }
 
 .app__play-table_bottom-cards {
@@ -199,16 +200,18 @@ body {
   flex-shrink: 0;
   height: 6rem;
   width: 3.5rem;
-  background: #e8e9ea;
-  border: 1px solid rgba(168, 174, 178, 0.4);
+  border: 1px solid #3993ff;
+  color: #3993ff;
+  line-height: 6rem;
+  text-align: center;
 }
 
 .app__table-card_player-name {
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   align-items: center;
-  display: flex;
   display: -webkit-box;
+  display: flex;
   font-size: 1.4rem;
   font-weight: 700;
   justify-content: center;
@@ -217,8 +220,6 @@ body {
   padding-top: 0.8rem;
   text-align: center;
   width: 8rem;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
 .hidden {
@@ -227,12 +228,46 @@ body {
 
 .app__navbar {
   text-align: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.app__navbar_left,
+.app__navbar_right {
+  width: 16rem;
+}
+
+.app__navbar_center {
+  text-align: center;
+  flex-grow: 1;
+}
+
+.app__new-game-btn {
+  align-items: center;
+  border: 0;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.8rem;
+  font-weight: 700;
+  height: 5.6rem;
+  letter-spacing: 0.02em;
+  outline: 0;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.09s linear;
+  background: #3993ff;
+  border: 0;
+  color: #fff;
+  padding: 0 2.4rem;
+  margin: 1rem;
 }
 
 .app__table-card_open {
   text-align: center;
   font-size: 2rem;
-  /* margin-top: 4rem; */
 }
 
 .app__avr-score {

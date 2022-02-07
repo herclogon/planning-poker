@@ -1,5 +1,6 @@
-const SESSION_ID = window.location.pathname;
+const SERVER_WEBSOCKET_PORT = 8081;
 
+const SESSION_ID = window.location.pathname;
 if (SESSION_ID === "/" || SESSION_ID === "") {
   let newSessionId = uuidv4();
   window.location.href = `${window.location.origin}/${newSessionId}`;
@@ -26,36 +27,28 @@ function uuidv4() {
 const App = {
   data() {
     return {
+      cards: [],
       counter: 0,
+      isCardsOpen: false,
+      playerId: "",
       playerName: "",
       variants: [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, "?"],
-      vote: null,
-      isCardsOpen: false,
-      cards: [
-        // {
-        //   playerName: "Dmitry Golubkov",
-        //   bid: 5,
-        // },
-        // {
-        //   playerName: "Ivan Petrov",
-        //   bid: null,
-        // },
-        // {
-        //   playerName: "Sergey Ivanov",
-        //   bid: 15,
-        // },
-      ],
+      vote: 23,
     };
   },
   mounted() {
-    this.playerName = localStorage.getItem("playerName");
-    this.playerId = localStorage.getItem("playerId");
-    if (!this.playerName || !this.playerId) {
-      this.playerName = prompt("Enter your name", "Harry potter");
-      this.playerId = uuidv4();
-      localStorage.setItem("playerName", this.playerName);
-      localStorage.setItem("playerId", this.playerId);
+    let playerName = localStorage.getItem("playerName");
+    let playerId = localStorage.getItem("playerId");
+    if (!playerName || !playerId) {
+      // Force insistently ask username.
+      while (!(playerName = prompt("Enter your name", "Harry potter"))) {}
+      playerId = uuidv4();
+      localStorage.setItem("playerName", playerName);
+      localStorage.setItem("playerId", playerId);
     }
+
+    this.playerName = playerName;
+    this.playerId = playerId;
 
     this.cards = [
       {
@@ -65,16 +58,15 @@ const App = {
       },
     ];
 
-    console.log("playerName", this.playerName);
-
-    this.socket = new WebSocket(`ws://${window.location.hostname}:8081`);
+    this.socket = new WebSocket(
+      `ws://${window.location.hostname}:${SERVER_WEBSOCKET_PORT}`
+    );
 
     this.socket.addEventListener("error", (event) => {
-      console.log("error", event);
+      console.error("WebSocket error", event);
     });
-    this.socket.addEventListener("open", (event) => {
-      console.log("open", event);
 
+    this.socket.addEventListener("open", (event) => {
       let msg = JSON.stringify({
         sessionId: SESSION_ID,
         type: MESSAGE_TYPE.REGISTER,
@@ -92,13 +84,10 @@ const App = {
       this.socket.send(msg);
       console.log(msg);
     });
+
     this.socket.addEventListener("message", (messageEvent) => {
       console.log("--> get message", messageEvent.data);
       let message = JSON.parse(messageEvent.data);
-      //   if (message.sessionId !== SESSION_ID) {
-      //     return;
-      //   }
-
       if (message.type === MESSAGE_TYPE.STATE_REQUEST) {
         this.socket.send(
           JSON.stringify({
@@ -131,8 +120,6 @@ const App = {
             bid: message.vote,
           });
         }
-
-        console.log("this.cards", this.cards);
       }
 
       if (message.type === MESSAGE_TYPE.REVEAL_CARDS) {
@@ -142,10 +129,13 @@ const App = {
       if (message.type === MESSAGE_TYPE.RENEW_GAME) {
         this.isCardsOpen = false;
         this.vote = null;
+        this.cards.splice(1, this.cards.length);
+        this.cards[0].bid = null;
+        
         this.socket.send(
           JSON.stringify({
             sessionId: SESSION_ID,
-            type: "vote",
+            type: MESSAGE_TYPE.STATE,
             playerName: this.playerName,
             playerId: this.playerId,
             vote: this.vote,
@@ -154,30 +144,14 @@ const App = {
       }
     });
   },
-  created() {},
+
   methods: {
     onVote(vote) {
-      console.log({ vote });
       this.vote = vote;
       this.socket.send(
         JSON.stringify({
           sessionId: SESSION_ID,
-          type: "vote",
-          playerName: this.playerName,
-          playerId: this.playerId,
-          vote: vote,
-        })
-      );
-    },
-
-    onRename() {
-      this.playerName = prompt("Enter your name", this.playerName);
-      localStorage.setItem("playerName", this.playerName);
-
-      this.socket.send(
-        JSON.stringify({
-          sessionId: SESSION_ID,
-          type: "vote",
+          type: MESSAGE_TYPE.STATE,
           playerName: this.playerName,
           playerId: this.playerId,
           vote: this.vote,
@@ -185,8 +159,24 @@ const App = {
       );
     },
 
-    onRevealCards() {
-      this.isCardsOpen = true;
+    onRename() {
+      let playerName;
+      while (!(playerName = prompt("Enter your name", this.playerName))) {}
+      this.playerName = playerName;
+      localStorage.setItem("playerName", this.playerName);
+
+      this.socket.send(
+        JSON.stringify({
+          sessionId: SESSION_ID,
+          type: MESSAGE_TYPE.STATE,
+          playerName: this.playerName,
+          playerId: this.playerId,
+          vote: this.vote,
+        })
+      );
+    },
+
+    onRevealCards() {      
       this.socket.send(
         JSON.stringify({
           sessionId: SESSION_ID,
@@ -196,7 +186,6 @@ const App = {
     },
 
     onStartNewVoting() {
-      this.isCardsOpen = false;
       this.socket.send(
         JSON.stringify({
           sessionId: SESSION_ID,
@@ -204,8 +193,6 @@ const App = {
         })
       );
     },
-
-    onMessage(message) {},
 
     averageScore() {
       let score = 0;

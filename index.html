@@ -9,7 +9,13 @@
 
     <div class="app__main-layout" id="app">
       <div class="app__navbar">
-        <h1 @click="onRename()">{{ playerName }}</h1>
+        <div class="app__navbar_left">
+          <!-- <button class="app__new-game-btn">New Game</button> -->
+        </div>
+        <div class="app__navbar_center">
+          <h1 @click="onRename()">{{ playerName }}</h1>
+        </div>
+        <div class="app__navbar_right"></div>
       </div>
       <div class="app__play-table">
         <div>&nbsp;</div>
@@ -76,7 +82,7 @@
         <div>&nbsp;</div>
       </div>
       <div v-if="isCardsOpen" class="app__avr-score">
-        Average: {{ averageScore() }}
+        Average: {{ Math.round(averageScore(),1) }}
       </div>
 
       <div v-if="!isCardsOpen" class="app__cards-selector">
