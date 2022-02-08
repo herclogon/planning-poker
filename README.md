@@ -2,7 +2,7 @@
 
 Inspired by https://planningpokeronline.com/
 
-IMPORTANT! Currently service uses two ports to work. They can be configured via
+**IMPORTANT!** Currently service uses two ports to work. They can be configured via
 environment variables: HTTP_PORT (default: 8080) and WS_PORT (default: 8081).
 
 ## How to start service
