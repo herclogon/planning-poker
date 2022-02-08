@@ -1,5 +1,7 @@
 # Simple and free planning poker
 
+![image](https://user-images.githubusercontent.com/884844/153072383-05f552d5-4d98-4fca-aa6c-eb316af26a9b.png)
+
 Inspired by https://planningpokeronline.com/
 
 **IMPORTANT!** Currently service uses two ports to work. They can be configured via
