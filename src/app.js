@@ -60,9 +60,8 @@
       ];
 
       // Fetching UI configuration from the server.
-      const SERVER_WEBSOCKET_PORT = await(
-        await fetch(`${UI_CONFIG_URL}`)
-      ).json().websocketPort;
+      const SERVER_WEBSOCKET_PORT = await(await fetch(UI_CONFIG_URL)).json()
+        .websocketPort;
 
       this.socket = new WebSocket(
         `ws://${window.location.hostname}:${SERVER_WEBSOCKET_PORT}`
