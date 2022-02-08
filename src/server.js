@@ -116,7 +116,6 @@ http
     }
 
     fs.readFile(filePath, function (error, content) {
-      console.error("Content read error", error);
       if (error) {
         if (error.code == "ENOENT") {
           // If file is not found send the default page instead.
