@@ -15,4 +15,4 @@ RUN npm ci
 
 EXPOSE ${HTTP_PORT}
 EXPOSE ${WS_PORT}
-CMD node src/server.js
+ENTRYPOINT npm start
