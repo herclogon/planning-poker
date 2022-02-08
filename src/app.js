@@ -1,10 +1,4 @@
 (async () => {
-  // Fetching UI configuration from the server.
-  const WEBSOCKET_PORT_URL = "/.ui_config";
-  const SERVER_WEBSOCKET_PORT = (
-    await (await fetch(`${WEBSOCKET_PORT_URL}`)).json()
-  ).websocketPort;
-
   // If URL doesn't contain a session id - generate a new one then redirect.
   const SESSION_ID = window.location.pathname;
   if (SESSION_ID === "/" || SESSION_ID === "") {
@@ -62,6 +56,12 @@
           bid: null,
         },
       ];
+
+      // Fetching UI configuration from the server.
+      const WEBSOCKET_PORT_URL = "/.ui_config";
+      const SERVER_WEBSOCKET_PORT = (
+        await (await fetch(`${WEBSOCKET_PORT_URL}`)).json()
+      ).websocketPort;
 
       this.socket = new WebSocket(
         `ws://${window.location.hostname}:${SERVER_WEBSOCKET_PORT}`
