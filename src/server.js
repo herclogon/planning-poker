@@ -92,6 +92,9 @@ http
     var extname = path.extname(filePath);
     var contentType = "text/html";
     switch (extname) {
+      case ".ico":
+        contentType = "image/x-icon";
+        break;
       case ".js":
         contentType = "text/javascript";
         break;
