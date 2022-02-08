@@ -1,12 +1,15 @@
+//
+// Starting a simple WebSocket broadcast server.
+//
 var WebSocketServer = require("ws").Server; // webSocket library
 
-// configure the webSocket server:
+// Configure the webSocket server.
 const wsPort = process.env.WS_PORT || 8081; // port number for the webSocket server
 const ws = new WebSocketServer({ port: wsPort }); // the webSocket server
 var clients = new Array(); // list of client connections
-var clientsTable = {}; // list of client connections
+var clientsBySessionId = {}; // list of client connections by session id
 
-// ------------------------ webSocket Server functions
+//  WebSocket Server handlers.
 function handleConnection(client, request) {
   console.log("New Connection"); // you have a new client
   clients.push(client); // add this client to the clients array
@@ -18,6 +21,7 @@ function handleConnection(client, request) {
     var position = clients.indexOf(client);
     clients.splice(position, 1);
 
+    // TODO(dmitry.golubkov): Purge clientsBySessionId.
     // for (const clients of Object.values(clientsTable)) {
     //   var position = clients.indexOf(client);
     //   clients.splice(position, 1);
@@ -29,26 +33,26 @@ function handleConnection(client, request) {
     let message = JSON.parse(data);
 
     if (message.type === "register") {
-      if (!clientsTable.hasOwnProperty(message.sessionId)) {
-        clientsTable[message.sessionId] = [];
+      if (!clientsBySessionId.hasOwnProperty(message.sessionId)) {
+        clientsBySessionId[message.sessionId] = [];
       }
       console.log("Store client to ", message.sessionId);
-      clientsTable[message.sessionId].push(client);
+      clientsBySessionId[message.sessionId].push(client);
     }
 
-    console.log(data + "");
     broadcast(message.sessionId, data + "");
   }
 
-  // set up client event listeners:
+  // Set up client event listeners:
   client.on("message", clientResponse);
   client.on("close", endClient);
 }
 
-// This function broadcasts messages to all webSocket clients
+// This function broadcasts messages to all webSocket clients in particular
+// session.
 function broadcast(sessionId, data) {
-  // iterate over the array of clients & send data to each
-  let clients = clientsTable[sessionId];
+  // Iterate over the array of clients & send data to each.
+  let clients = clientsBySessionId[sessionId];
   for (c in clients) {
     clients[c].send(data);
   }
@@ -58,17 +62,32 @@ function broadcast(sessionId, data) {
 ws.on("connection", handleConnection);
 console.log(`Websocket server is running on port ${wsPort}...`);
 
-// Starting simple HTTP server for static files.
+//
+// Starting a simple HTTP server to serve static files.
+//
 var http = require("http");
 var fs = require("fs");
 var path = require("path");
 
-const httpPort = process.env.WS_PORT || 8080; // port number for the webSocket server
+const httpPort = process.env.HTTP_PORT || 8080; // port number for the webSocket server
 
 http
   .createServer(function (request, response) {
-    var filePath = "." + request.url;
-    if (filePath == "./") filePath = "./index.html";
+    var webRoot = __dirname;
+    var filePath = webRoot + request.url;
+    if (filePath == webRoot + "/") filePath = webRoot + "/index.html";
+
+    // Custom URL to provide config to the UI.
+    if (request.url === "/.ui_config") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(
+        JSON.stringify({
+          websocketPort: process.env.WS_PORT,
+        }),
+        "utf-8"
+      );
+      return;
+    }
 
     var extname = path.extname(filePath);
     var contentType = "text/html";
@@ -97,7 +116,9 @@ http
       console.error("Content read error", error);
       if (error) {
         if (error.code == "ENOENT") {
-          fs.readFile("./index.html", function (error, content) {
+          // If file is not found send the default page instead.
+          // Uses to handle URLs like <origin>/<session_id>.
+          fs.readFile(webRoot + "/index.html", function (error, content) {
             response.writeHead(200, { "Content-Type": contentType });
             response.end(content, "utf-8");
           });
@@ -118,3 +139,9 @@ http
   })
   .listen(httpPort);
 console.log(`HTTP server is running on port ${httpPort}...`);
+
+// Exit on Ctrl+C.
+process.on("SIGINT", function () {
+  console.log("Caught interrupt signal");
+  process.exit();
+});
