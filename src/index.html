@@ -7,11 +7,9 @@
     <script src="https://unpkg.com/vue@next"></script>
     <script src="app.js"></script>
 
-    <div class="app__main-layout" id="app">
+    <div v-cloak class="app__main-layout" id="app">
       <div class="app__navbar">
-        <div class="app__navbar_left">
-          <!-- <button class="app__new-game-btn">New Game</button> -->
-        </div>
+        <div class="app__navbar_left"></div>
         <div class="app__navbar_center">
           <h1 @click="onRename()">{{ playerName }}</h1>
         </div>

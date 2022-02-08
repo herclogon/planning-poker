@@ -275,3 +275,7 @@ body {
   text-align: center;
   font-size: 3rem;
 }
+
+[v-cloak] {
+  display: none;
+}
