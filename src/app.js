@@ -4,6 +4,9 @@
   const UI_CONFIG = await (await fetch(UI_CONFIG_URL)).json();
   const SERVER_WEBSOCKET_PORT = UI_CONFIG.websocketPort;
 
+  // How many seconds wait before open cards on REVEAL message.
+  const OPEN_DELAY = 5;
+
   // If URL doesn't contain a session id - generate a new one then redirect.
   const SESSION_ID = window.location.pathname;
   if (SESSION_ID === "/" || SESSION_ID === "") {
@@ -34,6 +37,7 @@
         cards: [],
         counter: 0,
         isCardsOpen: false,
+        openDelayCounter: 0,
         playerId: "",
         playerName: "",
         variants: [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, "?"],
@@ -43,12 +47,19 @@
     mounted() {
       let playerName = localStorage.getItem("playerName");
       let playerId = localStorage.getItem("playerId");
-      if (!playerName || !playerId) {
-        // Force insistently ask username.
-        while (!(playerName = prompt("Enter your name", "Harry potter"))) {}
+
+      if (!playerId) {
         playerId = uuidv4();
-        localStorage.setItem("playerName", playerName);
         localStorage.setItem("playerId", playerId);
+      }
+
+      if (!playerName) {
+        playerName = "Harry potter";
+        let newName = prompt("Enter your name", playerName);
+        if (newName) {
+          playerName = newName;
+        }
+        localStorage.setItem("playerName", playerName);        
       }
 
       this.playerName = playerName;
@@ -124,8 +135,18 @@
           }
         }
 
+        // If REVEAL message was gotten - open cards after
+        // OPEN_DELAY interval.
         if (message.type === MESSAGE_TYPE.REVEAL_CARDS) {
-          this.isCardsOpen = true;
+          this.openDelayCounter = OPEN_DELAY;
+          let openDelayInterval = setInterval(() => {
+            this.openDelayCounter--;
+
+            if (this.openDelayCounter === 0) {
+              this.isCardsOpen = true;
+              clearInterval(openDelayInterval);
+            }
+          }, 1000);
         }
 
         if (message.type === MESSAGE_TYPE.RENEW_GAME) {
@@ -162,9 +183,11 @@
       },
 
       onRename() {
-        let playerName;
-        while (!(playerName = prompt("Enter your name", this.playerName))) {}
-        this.playerName = playerName;
+        let newName = prompt("Enter your name", this.playerName);
+        if (newName) {
+          this.playerName = newName;
+        }
+
         localStorage.setItem("playerName", this.playerName);
 
         this.socket.send(

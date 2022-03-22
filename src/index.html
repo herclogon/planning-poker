@@ -42,12 +42,16 @@
         <div>&nbsp;</div>
         <div class="app__play-table_table">
           <button
-            v-if="!isCardsOpen"
+            v-if="!isCardsOpen && !openDelayCounter"
             class="app__play-table_table-button"
             @click="onRevealCards()"
           >
             Reveal cards
           </button>
+          <label v-if="!isCardsOpen && openDelayCounter"
+          class="app__play-table_table-delay-label">
+            {{ openDelayCounter }}
+          </label>
           <button
             v-if="isCardsOpen"
             class="app__play-table_table-button"

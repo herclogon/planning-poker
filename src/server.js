@@ -1,11 +1,20 @@
+/**
+ * HTTP and WebSocket server for the poker application.
+ *
+ * In general, the server provides communication gateway between clients.
+ */
+
+WS_PORT = process.env.WS_PORT || 8081;
+HTTP_PORT = process.env.HTTP_PORT || 8080;
+
 //
 // Starting a simple WebSocket broadcast server.
 //
 var WebSocketServer = require("ws").Server; // webSocket library
 
 // Configure the webSocket server.
-const wsPort = process.env.WS_PORT || 8081; // port number for the webSocket server
-const ws = new WebSocketServer({ port: wsPort }); // the webSocket server
+// port number for the webSocket server
+const ws = new WebSocketServer({ port: WS_PORT }); // the webSocket server
 var clients = new Array(); // list of client connections
 var clientsBySessionId = {}; // list of client connections by session id
 
@@ -60,7 +69,7 @@ function broadcast(sessionId, data) {
 
 // Listen for clients and handle them.
 ws.on("connection", handleConnection);
-console.log(`Websocket server is running on port ${wsPort}...`);
+console.log(`Websocket server is running on port ${WS_PORT}...`);
 
 //
 // Starting a simple HTTP server to serve static files.
@@ -68,8 +77,6 @@ console.log(`Websocket server is running on port ${wsPort}...`);
 var http = require("http");
 var fs = require("fs");
 var path = require("path");
-
-const httpPort = process.env.HTTP_PORT || 8080; // port number for the webSocket server
 
 http
   .createServer(function (request, response) {
@@ -80,12 +87,10 @@ http
     // Custom URL to provide config to the UI.
     if (request.url === "/.ui_config") {
       response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(
-        JSON.stringify({
-          websocketPort: process.env.WS_PORT,
-        }),
-        "utf-8"
-      );
+      let responseBody = JSON.stringify({
+        websocketPort: WS_PORT,
+      });      
+      response.end(responseBody, "utf-8");
       return;
     }
 
@@ -139,8 +144,8 @@ http
       }
     });
   })
-  .listen(httpPort);
-console.log(`HTTP server is running on port ${httpPort}...`);
+  .listen(HTTP_PORT);
+console.log(`HTTP server is running on port ${HTTP_PORT}...`);
 
 // Exit on Ctrl+C.
 process.on("SIGINT", function () {
