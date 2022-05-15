@@ -5,7 +5,7 @@
   const SERVER_WEBSOCKET_PORT = UI_CONFIG.websocketPort;
 
   // How many seconds wait before open cards on REVEAL message.
-  const OPEN_DELAY = 5;
+  const OPEN_DELAY = 3;
 
   // If URL doesn't contain a session id - generate a new one then redirect.
   const SESSION_ID = window.location.pathname;
