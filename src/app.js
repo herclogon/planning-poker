@@ -31,6 +31,27 @@
     );
   }
 
+  /**
+   * Generate random variants for the cards.
+   *
+   * @returns List of variants.
+   */
+  function randomVariants() {
+    let variants = [];
+    const ranges = [1, 2, 4, 7, 12, 22, 39, 72, 131, 240];
+    const zip = (rows) => rows[0].map((_, c) => rows.map((row) => row[c]));
+    const randomInt = (lowerBound, upperBound) =>
+      Math.ceil(Math.random() * (upperBound - lowerBound) + lowerBound);
+    bounds = zip([ranges.slice(1), ranges]);
+    let lb, ub;
+    for (let bound of bounds) {
+      [ub, lb] = bound;
+      variants.push(randomInt(ub, lb));
+    }
+
+    return variants;
+  }
+
   const App = {
     data() {
       return {
@@ -40,7 +61,7 @@
         openDelayCounter: 0,
         playerId: "",
         playerName: "",
-        variants: [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, "?"],
+        variants: [...randomVariants(), "?"],
         vote: null,
       };
     },
@@ -59,7 +80,7 @@
         if (newName) {
           playerName = newName;
         }
-        localStorage.setItem("playerName", playerName);        
+        localStorage.setItem("playerName", playerName);
       }
 
       this.playerName = playerName;
