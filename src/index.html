@@ -27,12 +27,12 @@
             <div
               :class="
                 { 
-                    'app__table-card_back': card.bid && !isCardsOpen, 
-                    'app__table-card_face': card.bid === null || isCardsOpen,
-                    'app__table-card_open': card.bid && isCardsOpen
+                    'app__table-card_back': card.vote && !isCardsOpen, 
+                    'app__table-card_face': card.vote === null || isCardsOpen,
+                    'app__table-card_open': card.vote && isCardsOpen
                 }"
             >
-              <span v-if="isCardsOpen && card.bid">{{ card.bid }}</span>
+              <span v-if="isCardsOpen && card.vote">{{ card.vote }}</span>
             </div>
             <div class="app__table-card_player-name" :title="card.playerName">
               {{ card.playerName }}
@@ -74,12 +74,12 @@
             <div
               :class="
             { 
-                'app__table-card_back': card.bid && !isCardsOpen, 
-                'app__table-card_face': card.bid === null || isCardsOpen,
-                'app__table-card_open': card.bid && isCardsOpen
+                'app__table-card_back': card.vote && !isCardsOpen, 
+                'app__table-card_face': card.vote === null || isCardsOpen,
+                'app__table-card_open': card.vote && isCardsOpen
             }"
             >
-              <span v-if="isCardsOpen && card.bid">{{ card.bid }}</span>
+              <span v-if="isCardsOpen && card.vote">{{ card.vote }}</span>
             </div>
             <div class="app__table-card_player-name">{{ card.playerName }}</div>
           </div>

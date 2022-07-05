@@ -63,6 +63,7 @@
         playerName: "",
         variants: [...randomVariants(), "?"],
         vote: null,
+        averageScore: 0
       };
     },
     mounted() {
@@ -84,14 +85,13 @@
       }
 
       this.playerName = playerName;
-      this.playerId = playerId;
-      this.averageScore = 0;
+      this.playerId = playerId;      
 
       this.cards = [
         {
           playerName: this.playerName,
           playerId: this.playerId,
-          bid: null,
+          vote: null,
         },
       ];
 
@@ -144,7 +144,7 @@
           this.cards.forEach((card) => {
             if (card.playerId === message.playerId) {
               card.playerName = message.playerName;
-              card.bid = message.vote;
+              card.vote = message.vote;
               found = true;
             }
           });
@@ -152,7 +152,7 @@
             this.cards.push({
               playerName: message.playerName,
               playerId: message.playerId,
-              bid: message.vote,
+              vote: message.vote,
             });
           }
         }
@@ -176,7 +176,7 @@
                   text: (trigger) => {
                     let content = "";
                     for (let card of this.cards) {
-                      content += `${card.playerName}: ${card.bid}\n`;
+                      content += `${card.playerName}: ${card.vote}\n`;
                     }
 
                     content += `\n`;
@@ -195,7 +195,7 @@
           this.isCardsOpen = false;
           this.vote = null;
           this.cards.splice(1, this.cards.length);
-          this.cards[0].bid = null;
+          this.cards[0].vote = null;
 
           this.socket.send(
             JSON.stringify({
@@ -265,8 +265,8 @@
         let score = 0;
         let count = 0;
         for (let idx in this.cards) {
-          if (typeof this.cards[idx].bid === "number") {
-            score += this.cards[idx].bid;
+          if (typeof this.cards[idx].vote === "number") {
+            score += this.cards[idx].vote;
             count++;
           }
         }
