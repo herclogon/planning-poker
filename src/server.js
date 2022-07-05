@@ -89,7 +89,7 @@ http
       response.writeHead(200, { "Content-Type": "application/json" });
       let responseBody = JSON.stringify({
         websocketPort: WS_PORT,
-      });      
+      });
       response.end(responseBody, "utf-8");
       return;
     }
@@ -114,6 +114,9 @@ http
         break;
       case ".jpg":
         contentType = "image/jpg";
+        break;
+      case ".svg":
+        contentType = "image/svg+xml";
         break;
       case ".wav":
         contentType = "audio/wav";

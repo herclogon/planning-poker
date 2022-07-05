@@ -5,6 +5,7 @@
   </head>
   <body>
     <script src="https://unpkg.com/vue@next"></script>
+    <script src="assets/clipboard.min.js"></script>
     <script src="app.js"></script>
 
     <div v-cloak class="app__main-layout" id="app">
@@ -48,8 +49,10 @@
           >
             Reveal cards
           </button>
-          <label v-if="!isCardsOpen && openDelayCounter"
-          class="app__play-table_table-delay-label">
+          <label
+            v-if="!isCardsOpen && openDelayCounter"
+            class="app__play-table_table-delay-label"
+          >
             {{ openDelayCounter }}
           </label>
           <button
@@ -84,7 +87,10 @@
         <div>&nbsp;</div>
       </div>
       <div v-if="isCardsOpen" class="app__avr-score">
-        Average: {{ Math.round(averageScore(),1) }}
+        Average: {{ averageScore }}
+        <button class="app__clipboard-btn">
+          <img src="assets/clipboard.svg" alt="Copy to clipboard" />
+        </button>
       </div>
 
       <div v-if="!isCardsOpen" class="app__cards-selector">

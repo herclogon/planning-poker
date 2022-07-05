@@ -85,6 +85,7 @@
 
       this.playerName = playerName;
       this.playerId = playerId;
+      this.averageScore = 0;
 
       this.cards = [
         {
@@ -165,6 +166,26 @@
 
             if (this.openDelayCounter === 0) {
               this.isCardsOpen = true;
+              this.averageScore = this.calcAverageScore();
+
+              // Update the voting results and calculate the average.
+              // setTimeout required to wait when v-if is ready.
+              setTimeout(() => {
+                
+                this.clipboard = new ClipboardJS(".app__clipboard-btn", {
+                  text: (trigger) => {
+                    let content = "";
+                    for (let card of this.cards) {
+                      content += `${card.playerName}: ${card.bid}\n`;
+                    }
+
+                    content += `\n`;
+                    content += `Average: ${this.averageScore}`;
+                    return content;
+                  },
+                });
+              }, 0);
+
               clearInterval(openDelayInterval);
             }
           }, 1000);
@@ -240,7 +261,7 @@
         );
       },
 
-      averageScore() {
+      calcAverageScore() {
         let score = 0;
         let count = 0;
         for (let idx in this.cards) {
@@ -250,7 +271,7 @@
           }
         }
 
-        return count ? score / count : 0;
+        return Math.round(count ? score / count : 0, 1);
       },
     },
   };

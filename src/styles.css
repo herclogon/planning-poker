@@ -300,3 +300,23 @@ body {
 [v-cloak] {
   display: none;
 }
+
+.app__clipboard-btn {
+  border: none;
+  background-color: inherit;
+  cursor: pointer;
+}
+
+.app__clipboard-btn img {
+  width: 22px;
+}
+
+/**
+ * Dirty hack, because we can't copy to clipboard `display: none` container 
+ * content. Using `position: absolute` and `opacity: 0` instead.
+ */
+#app__clipboard-content {
+  position: absolute;
+  opacity: 0;
+  top: 0px;
+}
