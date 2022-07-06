@@ -73,7 +73,7 @@
 
       // Asking the user to enter the player's name if it is not defined.
       if (!playerName) {
-        playerName = "Harry potter";
+        playerName = "Harry Potter";
         let newName = prompt("Enter your name", playerName);
         if (newName) {
           playerName = newName;
