@@ -4,49 +4,44 @@
  * In general, the server provides communication gateway between clients.
  */
 
-WS_PORT = process.env.WS_PORT || 8081;
+// Getting HTTP_PORT from environment or using 8080 if not set.
 HTTP_PORT = process.env.HTTP_PORT || 8080;
 
-//
 // Starting a simple WebSocket broadcast server.
-//
 var WebSocketServer = require("ws").Server; // webSocket library
 
 // Configure the webSocket server.
 // port number for the webSocket server
-const ws = new WebSocketServer({ port: WS_PORT }); // the webSocket server
-var clients = new Array(); // list of client connections
-var clientsBySessionId = {}; // list of client connections by session id
+const websocketServerInstance = new WebSocketServer({ noServer: true });
+let clientsBySessionId = {}; // list of client connections by session id
 
 //  WebSocket Server handlers.
 function handleConnection(client, request) {
   console.log("New Connection"); // you have a new client
-  clients.push(client); // add this client to the clients array
 
   function endClient() {
-    // when a client closes its connection
-    // get the client's position in the array
-    // and delete it from the array:
-    var position = clients.indexOf(client);
-    clients.splice(position, 1);
-
-    // TODO(dmitry.golubkov): Purge clientsBySessionId.
-    // for (const clients of Object.values(clientsTable)) {
-    //   var position = clients.indexOf(client);
-    //   clients.splice(position, 1);
-    // }
-    console.log("connection closed");
+    // Remove disconnected client from the `clientsBySessionId` collection.
+    for (let sessionId in clientsBySessionId) {
+      for (let playerId in clientsBySessionId[sessionId]) {
+        if (clientsBySessionId[sessionId][playerId] === client) {
+          console.log(`DELETE CLIENT of playerId '${playerId}'`);
+          delete clientsBySessionId[sessionId][playerId];
+        }
+      }
+    }
+    console.log("Connection closed.");
   }
 
   function clientResponse(data) {
     let message = JSON.parse(data);
+    console.log("message", message);
 
-    if (message.type === "register") {
-      if (!clientsBySessionId.hasOwnProperty(message.sessionId)) {
-        clientsBySessionId[message.sessionId] = [];
-      }
-      console.log("Store client to ", message.sessionId);
-      clientsBySessionId[message.sessionId].push(client);
+    if (message.type === "state") {
+      clientsBySessionId[message.sessionId] =
+        clientsBySessionId[message.sessionId] ?? {};
+
+      clientsBySessionId[message.sessionId][message.playerId] =
+        clientsBySessionId[message.sessionId][message.playerId] ?? client;
     }
 
     broadcast(message.sessionId, data + "");
@@ -60,25 +55,24 @@ function handleConnection(client, request) {
 // This function broadcasts messages to all webSocket clients in particular
 // session.
 function broadcast(sessionId, data) {
+  console.log("BROADCAST", sessionId, data);
   // Iterate over the array of clients & send data to each.
-  let clients = clientsBySessionId[sessionId];
-  for (c in clients) {
-    clients[c].send(data);
+  let playerIds = clientsBySessionId[sessionId];
+  for (playerId in playerIds) {
+    console.log("SEND", `${data} to '${playerId}'`);
+    clientsBySessionId[sessionId][playerId].send(data);
   }
 }
 
 // Listen for clients and handle them.
-ws.on("connection", handleConnection);
-console.log(`Websocket server is running on port ${WS_PORT}...`);
+websocketServerInstance.on("connection", handleConnection);
 
-//
 // Starting a simple HTTP server to serve static files.
-//
 var http = require("http");
 var fs = require("fs");
 var path = require("path");
 
-http
+let httpServer = http
   .createServer(function (request, response) {
     var webRoot = __dirname;
     var filePath = webRoot + request.url;
@@ -88,7 +82,7 @@ http
     if (request.url === "/.ui_config") {
       response.writeHead(200, { "Content-Type": "application/json" });
       let responseBody = JSON.stringify({
-        websocketPort: WS_PORT,
+        websocketPort: HTTP_PORT,
       });
       response.end(responseBody, "utf-8");
       return;
@@ -148,7 +142,20 @@ http
     });
   })
   .listen(HTTP_PORT);
-console.log(`HTTP server is running on port ${HTTP_PORT}...`);
+
+console.log(`HTTP/WS server is running on port ${HTTP_PORT}...`);
+
+// Initialize WebSocket connection handling through HTTP.
+httpServer.on("upgrade", function upgrade(request, socket, head) {
+  websocketServerInstance.handleUpgrade(
+    request,
+    socket,
+    head,
+    function done(ws) {
+      websocketServerInstance.emit("connection", ws, request);
+    }
+  );
+});
 
 // Exit on Ctrl+C.
 process.on("SIGINT", function () {

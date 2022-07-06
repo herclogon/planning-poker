@@ -17,7 +17,6 @@
   MESSAGE_TYPE = {
     STATE_REQUEST: "state_request",
     STATE: "state",
-    REGISTER: "register",
     REVEAL_CARDS: "reveal_cards",
     RENEW_GAME: "renew_game",
   };
@@ -63,18 +62,21 @@
         playerName: "",
         variants: [...randomVariants(), "?"],
         vote: null,
-        averageScore: 0
+        averageScore: 0,
       };
     },
     mounted() {
       let playerName = localStorage.getItem("playerName");
       let playerId = localStorage.getItem("playerId");
 
+      // Generating a new unique `playerId` if not defined.
       if (!playerId) {
         playerId = uuidv4();
         localStorage.setItem("playerId", playerId);
       }
+      this.playerId = playerId;
 
+      // Asking the user to enter the player's name if it is not defined.
       if (!playerName) {
         playerName = "Harry potter";
         let newName = prompt("Enter your name", playerName);
@@ -83,10 +85,9 @@
         }
         localStorage.setItem("playerName", playerName);
       }
-
       this.playerName = playerName;
-      this.playerId = playerId;      
 
+      // Setting the default card value with no vote.
       this.cards = [
         {
           playerName: this.playerName,
@@ -106,7 +107,7 @@
       this.socket.addEventListener("open", (event) => {
         let msg = JSON.stringify({
           sessionId: SESSION_ID,
-          type: MESSAGE_TYPE.REGISTER,
+          type: MESSAGE_TYPE.STATE,
           playerName: this.playerName,
           playerId: this.playerId,
           vote: this.vote,
@@ -137,9 +138,7 @@
           );
         }
 
-        if (
-          [MESSAGE_TYPE.STATE, MESSAGE_TYPE.REGISTER].includes(message.type)
-        ) {
+        if (message.type === MESSAGE_TYPE.STATE) {
           let found = false;
           this.cards.forEach((card) => {
             if (card.playerId === message.playerId) {
@@ -168,15 +167,17 @@
               this.isCardsOpen = true;
               this.averageScore = this.calcAverageScore();
 
-              // Update the voting results and calculate the average.
-              // setTimeout required to wait when v-if is ready.
+              // Update the voting results and calculate average.
+              // `setTimeout` is required to wait when `v-if` is ready.
               setTimeout(() => {
-                
                 this.clipboard = new ClipboardJS(".app__clipboard-btn", {
                   text: (trigger) => {
                     let content = "";
                     for (let card of this.cards) {
-                      content += `${card.playerName}: ${card.vote}\n`;
+                      let playerName = card.playerName.toLowerCase();
+                      playerName = playerName.replace(" ", ".");                      
+                      let vote = card.vote ?? "?"
+                      content += `* @${playerName}: ${vote}\n`;
                     }
 
                     content += `\n`;
@@ -196,6 +197,7 @@
           this.vote = null;
           this.cards.splice(1, this.cards.length);
           this.cards[0].vote = null;
+          this.variants = [...randomVariants(), "?"];
 
           this.socket.send(
             JSON.stringify({

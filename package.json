@@ -18,6 +18,7 @@
   "homepage": "https://github.com/herclogon/planning-poker#readme",
   "dependencies": {
     "eslint": "^8.8.0",
+    "websocket": "^1.0.34",
     "ws": "^8.4.2"
   }
 }

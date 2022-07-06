@@ -2,7 +2,6 @@ FROM alpine
 
 ENV INSTALL_DIR=/opt/poker
 ENV HTTP_PORT=8080
-ENV WS_PORT=8081
 
 RUN apk add npm 
 
@@ -14,5 +13,4 @@ WORKDIR ${INSTALL_DIR}
 RUN npm ci
 
 EXPOSE ${HTTP_PORT}
-EXPOSE ${WS_PORT}
 ENTRYPOINT npm start
