@@ -1,9 +1,4 @@
 (async () => {
-  // Fetching UI configuration from the server.
-  const UI_CONFIG_URL = "/.ui_config";
-  const UI_CONFIG = await (await fetch(UI_CONFIG_URL)).json();
-  const SERVER_WEBSOCKET_PORT = UI_CONFIG.websocketPort;
-
   // How many seconds wait before open cards on REVEAL message.
   const OPEN_DELAY = 3;
 
@@ -97,7 +92,7 @@
       ];
 
       this.socket = new WebSocket(
-        `ws://${window.location.hostname}:${SERVER_WEBSOCKET_PORT}`
+        `ws://${window.location.hostname}:${window.location.port}`
       );
 
       this.socket.addEventListener("error", (event) => {
@@ -175,8 +170,8 @@
                     let content = "";
                     for (let card of this.cards) {
                       let playerName = card.playerName.toLowerCase();
-                      playerName = playerName.replace(" ", ".");                      
-                      let vote = card.vote ?? "?"
+                      playerName = playerName.replace(" ", ".");
+                      let vote = card.vote ?? "?";
                       content += `* @${playerName}: ${vote}\n`;
                     }
 
@@ -278,5 +273,8 @@
     },
   };
 
-  Vue.createApp(App).mount("#app");
+  // Required for the Vue template initialization.
+  setTimeout(() => {
+    Vue.createApp(App).mount("#app");
+  });
 })();

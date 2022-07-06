@@ -78,16 +78,6 @@ let httpServer = http
     var filePath = webRoot + request.url;
     if (filePath == webRoot + "/") filePath = webRoot + "/index.html";
 
-    // Custom URL to provide config to the UI.
-    if (request.url === "/.ui_config") {
-      response.writeHead(200, { "Content-Type": "application/json" });
-      let responseBody = JSON.stringify({
-        websocketPort: HTTP_PORT,
-      });
-      response.end(responseBody, "utf-8");
-      return;
-    }
-
     var extname = path.extname(filePath);
     var contentType = "text/html";
     switch (extname) {
