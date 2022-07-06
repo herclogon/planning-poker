@@ -1,0 +1,14 @@
+[Service]
+Type=simple
+PIDFile=/run/poker.pid
+WorkingDirectory=/home/poker/planning-poker
+User=poker
+Group=poker
+Environment=RACK_ENV=production
+OOMScoreAdjust=-1000
+Restart=always
+RestartSec=10
+ExecStart=/bin/bash -c 'source ~/.nvm/nvm.sh; nvm use v16.15.1; npm start'
+
+[Install]
+WantedBy=multi-user.target
