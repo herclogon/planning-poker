@@ -4,6 +4,10 @@
 
 Inspired by https://planningpokeronline.com/
 
+Hosted as: http://planningpoker.tk/
+
+Source: https://git.dev.hsdesign.ru/public/planning-poker
+
 Github mirror: https://github.com/herclogon/planning-poker
 
 
