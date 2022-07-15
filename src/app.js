@@ -14,6 +14,8 @@
     STATE: "state",
     REVEAL_CARDS: "reveal_cards",
     RENEW_GAME: "renew_game",
+    DISCONNECT: "disconnect",
+    PING: "ping"
   };
 
   function uuidv4() {
@@ -91,120 +93,166 @@
         },
       ];
 
-      this.socket = new WebSocket(
-        `ws://${window.location.hostname}:${window.location.port}`
-      );
+      let connect = () => {
+        let schema = window.location.schema === "https" ? "wss" : "ws";
+        this.socket = new WebSocket(
+          `${schema}://${window.location.hostname}:${window.location.port}`
+        );
 
-      this.socket.addEventListener("error", (event) => {
-        console.error("WebSocket error", event);
-      });
-
-      this.socket.addEventListener("open", (event) => {
-        let msg = JSON.stringify({
-          sessionId: SESSION_ID,
-          type: MESSAGE_TYPE.STATE,
-          playerName: this.playerName,
-          playerId: this.playerId,
-          vote: this.vote,
+        this.socket.addEventListener("error", (event) => {
+          console.error("WebSocket error", event);
         });
-        this.socket.send(msg);
-        console.log("<-- send message", msg);
 
-        msg = JSON.stringify({
-          sessionId: SESSION_ID,
-          type: MESSAGE_TYPE.STATE_REQUEST,
-        });
-        this.socket.send(msg);
-        console.log(msg);
-      });
+        // Trying to re-reconnect each time on disconnect.
+        this.socket.addEventListener("close", (event) => {
+          if (this.keepAliveEmitter) {
+            clearInterval(this.keepAliveEmitter);
 
-      this.socket.addEventListener("message", (messageEvent) => {
-        console.log("--> get message", messageEvent.data);
-        let message = JSON.parse(messageEvent.data);
-        if (message.type === MESSAGE_TYPE.STATE_REQUEST) {
-          this.socket.send(
-            JSON.stringify({
-              sessionId: SESSION_ID,
-              type: MESSAGE_TYPE.STATE,
-              playerId: this.playerId,
-              playerName: this.playerName,
-              vote: this.vote,
-            })
-          );
-        }
-
-        if (message.type === MESSAGE_TYPE.STATE) {
-          let found = false;
-          this.cards.forEach((card) => {
-            if (card.playerId === message.playerId) {
-              card.playerName = message.playerName;
-              card.vote = message.vote;
-              found = true;
-            }
-          });
-          if (!found) {
-            this.cards.push({
-              playerName: message.playerName,
-              playerId: message.playerId,
-              vote: message.vote,
-            });
+            setTimeout(() => {
+              connect();
+            }, 1000);
           }
-        }
 
-        // If REVEAL message was gotten - open cards after
-        // OPEN_DELAY interval.
-        if (message.type === MESSAGE_TYPE.REVEAL_CARDS) {
-          this.openDelayCounter = OPEN_DELAY;
-          let openDelayInterval = setInterval(() => {
-            this.openDelayCounter--;
+          console.error("WebSocket connection is closed.", event);
+        });
 
-            if (this.openDelayCounter === 0) {
-              this.isCardsOpen = true;
-              this.averageScore = this.calcAverageScore();
+        this.socket.addEventListener("open", (event) => {
+          console.log("WebSocket connection is open.", event);
 
-              // Update the voting results and calculate average.
-              // `setTimeout` is required to wait when `v-if` is ready.
-              setTimeout(() => {
-                this.clipboard = new ClipboardJS(".app__clipboard-btn", {
-                  text: (trigger) => {
-                    let content = "";
-                    for (let card of this.cards) {
-                      let playerName = card.playerName.toLowerCase();
-                      playerName = playerName.replace(" ", ".");
-                      let vote = card.vote ?? "?";
-                      content += `* @${playerName}: ${vote}\n`;
-                    }
-
-                    content += `\n`;
-                    content += `Average: ${this.averageScore}`;
-                    return content;
-                  },
-                });
-              }, 0);
-
-              clearInterval(openDelayInterval);
-            }
-          }, 1000);
-        }
-
-        if (message.type === MESSAGE_TYPE.RENEW_GAME) {
-          this.isCardsOpen = false;
-          this.vote = null;
-          this.cards.splice(1, this.cards.length);
-          this.cards[0].vote = null;
-          this.variants = [...randomVariants(), "?"];
-
-          this.socket.send(
-            JSON.stringify({
-              sessionId: SESSION_ID,
-              type: MESSAGE_TYPE.STATE,
-              playerName: this.playerName,
+          // Init backend auto-ping, to keep connectoion alive.
+          this.keepAliveEmitter = setInterval(() => {
+            let msg = JSON.stringify({
+              type: MESSAGE_TYPE.PING,
               playerId: this.playerId,
-              vote: this.vote,
-            })
-          );
-        }
-      });
+            });
+            console.log("<-- send message", msg);
+            this.socket.send(msg);
+          }, 5000);
+
+
+          let msg = JSON.stringify({
+            sessionId: SESSION_ID,
+            type: MESSAGE_TYPE.STATE,
+            playerName: this.playerName,
+            playerId: this.playerId,
+            vote: this.vote,
+          });
+          this.socket.send(msg);
+          console.log("<-- send message", msg);
+
+          msg = JSON.stringify({
+            sessionId: SESSION_ID,
+            type: MESSAGE_TYPE.STATE_REQUEST,
+          });
+          this.socket.send(msg);
+          console.log(msg);
+        });
+
+        this.socket.addEventListener("message", (messageEvent) => {
+          console.log("--> get message", messageEvent.data);
+          let message = JSON.parse(messageEvent.data);
+          if (message.type === MESSAGE_TYPE.STATE_REQUEST) {
+            this.socket.send(
+              JSON.stringify({
+                sessionId: SESSION_ID,
+                type: MESSAGE_TYPE.STATE,
+                playerId: this.playerId,
+                playerName: this.playerName,
+                vote: this.vote,
+              })
+            );
+          }
+
+          // If the player was disconnected just remove his cart from the table.
+          if (message.type === MESSAGE_TYPE.DISCONNECT) {
+            for (let cardIdx in this.cards) {
+              if (this.cards[cardIdx].playerId == message.playerId) {
+                this.cards.splice(cardIdx, 1);
+              }
+            }
+          }
+
+          // If we got a new state of the some player, just update cards on the table.
+          if (message.type === MESSAGE_TYPE.STATE) {
+            let found = false;
+            this.cards.forEach((card) => {
+              if (card.playerId === message.playerId) {
+                card.playerName = message.playerName;
+                card.vote = message.vote;
+                found = true;
+              }
+            });
+            if (!found) {
+              this.cards.push({
+                playerName: message.playerName,
+                playerId: message.playerId,
+                vote: message.vote,
+              });
+            }
+          }
+
+          // If REVEAL message was gotten - open cards after
+          // OPEN_DELAY interval.
+          if (message.type === MESSAGE_TYPE.REVEAL_CARDS) {
+            // If we got REVEAL_CARDS twice.
+            if (this.openDelayInterval) {
+              clearInterval(this.openDelayInterval);
+            }
+            
+            this.openDelayCounter = OPEN_DELAY;
+            this.openDelayInterval = setInterval(() => {
+              this.openDelayCounter--;
+
+              if (this.openDelayCounter <= 0) {
+                this.isCardsOpen = true;
+                this.averageScore = this.calcAverageScore();
+
+                // Update the voting results and calculate average.
+                // `setTimeout` is required to wait when `v-if` is ready.
+                setTimeout(() => {
+                  this.clipboard = new ClipboardJS(".app__clipboard-btn", {
+                    text: (trigger) => {
+                      let content = "";
+                      for (let card of this.cards) {
+                        let playerName = card.playerName.toLowerCase();
+                        playerName = playerName.replace(" ", ".");
+                        let vote = card.vote ?? "?";
+                        content += `* @${playerName}: ${vote}\n`;
+                      }
+
+                      content += `\n`;
+                      content += `Average: ${this.averageScore}`;
+                      return content;
+                    },
+                  });
+                }, 0);
+
+                clearInterval(this.openDelayInterval);
+              }
+            }, 1000);
+          }
+
+          if (message.type === MESSAGE_TYPE.RENEW_GAME) {
+            this.isCardsOpen = false;
+            this.vote = null;
+            this.cards.splice(1, this.cards.length);
+            this.cards[0].vote = null;
+            this.variants = [...randomVariants(), "?"];
+
+            this.socket.send(
+              JSON.stringify({
+                sessionId: SESSION_ID,
+                type: MESSAGE_TYPE.STATE,
+                playerName: this.playerName,
+                playerId: this.playerId,
+                vote: this.vote,
+              })
+            );
+          }
+        });
+      };
+
+      connect();
     },
 
     methods: {
@@ -273,7 +321,7 @@
     },
   };
 
-  // Required for the Vue template initialization.
+  // Required for the right Vue template initialization.
   setTimeout(() => {
     Vue.createApp(App).mount("#app");
   });

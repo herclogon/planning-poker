@@ -26,6 +26,12 @@ function handleConnection(client, request) {
         if (clientsBySessionId[sessionId][playerId] === client) {
           console.log(`DELETE CLIENT of playerId '${playerId}'`);
           delete clientsBySessionId[sessionId][playerId];
+
+          // Notify the remaining players that one player has been disconnected.
+          broadcast(sessionId, JSON.stringify({
+            type: "disconnect",
+            playerId: playerId
+          }));
         }
       }
     }
@@ -36,15 +42,21 @@ function handleConnection(client, request) {
     let message = JSON.parse(data);
     console.log("message", message);
 
-    if (message.type === "state") {
-      clientsBySessionId[message.sessionId] =
-        clientsBySessionId[message.sessionId] ?? {};
+    // Keeping client connection object if not exists.
+    clientsBySessionId[message.sessionId] =
+      clientsBySessionId[message.sessionId] ?? {};
 
-      clientsBySessionId[message.sessionId][message.playerId] =
-        clientsBySessionId[message.sessionId][message.playerId] ?? client;
+    clientsBySessionId[message.sessionId][message.playerId] =
+      clientsBySessionId[message.sessionId][message.playerId] ?? client;
+
+    // To keep connection alive. Just return back original message.
+    if (message.type === "ping") {
+      message.type = "pong";
+      client.send(JSON.stringify(message))
+      return;
     }
 
-    broadcast(message.sessionId, data + "");
+    broadcast(message.sessionId, JSON.stringify(message));
   }
 
   // Set up client event listeners:
@@ -120,8 +132,8 @@ let httpServer = http
           response.writeHead(500);
           response.end(
             "Sorry, check with the site admin for error: " +
-              error.code +
-              " ..\n"
+            error.code +
+            " ..\n"
           );
           response.end();
         }
