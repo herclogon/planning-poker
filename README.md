@@ -4,7 +4,7 @@
 
 Inspired by https://planningpokeronline.com/
 
-Hosted as: http://planningpoker.tk/
+Hosted as: https://planningpoker.tk/
 
 Source: https://git.dev.hsdesign.ru/public/planning-poker
 
@@ -25,7 +25,3 @@ docker run -e HTTP_PORT=8080 -p 8080:8080 herclogon/poker:latest
 npm ci
 npm start
 ```
-
-## TODO
-- [ ] Websocket auto-reconnect
-- [ ] JWT for messaging (server should accept only signed requests)

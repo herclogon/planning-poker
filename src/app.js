@@ -15,7 +15,7 @@
     REVEAL_CARDS: "reveal_cards",
     RENEW_GAME: "renew_game",
     DISCONNECT: "disconnect",
-    PING: "ping"
+    PING: "ping",
   };
 
   function uuidv4() {
@@ -130,7 +130,6 @@
             this.socket.send(msg);
           }, 5000);
 
-
           let msg = JSON.stringify({
             sessionId: SESSION_ID,
             type: MESSAGE_TYPE.STATE,
@@ -152,6 +151,8 @@
         this.socket.addEventListener("message", (messageEvent) => {
           console.log("--> get message", messageEvent.data);
           let message = JSON.parse(messageEvent.data);
+
+          // If another player requested our STATE - send it.
           if (message.type === MESSAGE_TYPE.STATE_REQUEST) {
             this.socket.send(
               JSON.stringify({
@@ -164,7 +165,7 @@
             );
           }
 
-          // If the player was disconnected just remove his cart from the table.
+          // If the player is disconnected - remove his cart from the table.
           if (message.type === MESSAGE_TYPE.DISCONNECT) {
             for (let cardIdx in this.cards) {
               if (this.cards[cardIdx].playerId == message.playerId) {
@@ -173,7 +174,8 @@
             }
           }
 
-          // If we got a new state of the some player, just update cards on the table.
+          // If a new STATE of any player is received, simply update the cards
+          // on the table.
           if (message.type === MESSAGE_TYPE.STATE) {
             let found = false;
             this.cards.forEach((card) => {
@@ -192,14 +194,14 @@
             }
           }
 
-          // If REVEAL message was gotten - open cards after
-          // OPEN_DELAY interval.
+          // If a REVEAL message is received, open cards after the OPEN_DELAY
+          // interval.
           if (message.type === MESSAGE_TYPE.REVEAL_CARDS) {
-            // If we got REVEAL_CARDS twice.
+            // If we get REVEAL_CARDS, start the open interval from start.
             if (this.openDelayInterval) {
               clearInterval(this.openDelayInterval);
             }
-            
+
             this.openDelayCounter = OPEN_DELAY;
             this.openDelayInterval = setInterval(() => {
               this.openDelayCounter--;
@@ -209,7 +211,7 @@
                 this.averageScore = this.calcAverageScore();
 
                 // Update the voting results and calculate average.
-                // `setTimeout` is required to wait when `v-if` is ready.
+                // `setTimeout` is required to wait for `v-if` is ready.
                 setTimeout(() => {
                   this.clipboard = new ClipboardJS(".app__clipboard-btn", {
                     text: (trigger) => {
@@ -233,6 +235,9 @@
             }, 1000);
           }
 
+          // If a RENEW_GAME message is received, close all cards, reset our 
+          // vote, re-new card variants and send our new STATE to the other 
+          // players.
           if (message.type === MESSAGE_TYPE.RENEW_GAME) {
             this.isCardsOpen = false;
             this.vote = null;
