@@ -94,7 +94,7 @@
       ];
 
       let connect = () => {
-        let schema = window.location.schema === "https" ? "wss" : "ws";
+        let schema = window.location.protocol === "https:" ? "wss" : "ws";
         this.socket = new WebSocket(
           `${schema}://${window.location.hostname}:${window.location.port}`
         );
@@ -108,6 +108,7 @@
           if (this.keepAliveEmitter) {
             clearInterval(this.keepAliveEmitter);
 
+            // Trying to reconnect.
             setTimeout(() => {
               connect();
             }, 1000);
