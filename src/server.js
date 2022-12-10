@@ -17,21 +17,25 @@ let clientsBySessionId = {}; // list of client connections by session id
 
 //  WebSocket Server handlers.
 function handleConnection(client, request) {
-  console.log("New Connection"); // you have a new client
+  console.log("New Connection, session id: ", request.url);
+  const requestSessionId = request.url;
 
   function endClient() {
     // Remove disconnected client from the `clientsBySessionId` collection.
-    for (let sessionId in clientsBySessionId) {
-      for (let playerId in clientsBySessionId[sessionId]) {
+    for (const sessionId in clientsBySessionId) {
+      for (const playerId in clientsBySessionId[sessionId]) {
         if (clientsBySessionId[sessionId][playerId] === client) {
           console.log(`DELETE CLIENT of playerId '${playerId}'`);
           delete clientsBySessionId[sessionId][playerId];
 
           // Notify the remaining players that one player has been disconnected.
-          broadcast(sessionId, JSON.stringify({
-            type: "disconnect",
-            playerId: playerId
-          }));
+          broadcast(
+            sessionId,
+            JSON.stringify({
+              type: "disconnect",
+              playerId: playerId,
+            })
+          );
         }
       }
     }
@@ -40,23 +44,29 @@ function handleConnection(client, request) {
 
   function clientResponse(data) {
     let message = JSON.parse(data);
-    console.log("message", message);
-
-    // Keeping client connection object if not exists.
-    clientsBySessionId[message.sessionId] =
-      clientsBySessionId[message.sessionId] ?? {};
-
-    clientsBySessionId[message.sessionId][message.playerId] =
-      clientsBySessionId[message.sessionId][message.playerId] ?? client;
 
     // To keep connection alive. Just return back original message.
     if (message.type === "ping") {
       message.type = "pong";
-      client.send(JSON.stringify(message))
+      client.send(JSON.stringify(message));
       return;
     }
 
-    broadcast(message.sessionId, JSON.stringify(message));
+    if (!message?.playerId) {
+      const msg = { error: `Wrong message. PlayerId is not set. ${data}` };
+      console.error(msg);
+      client.send(JSON.stringify(msg));
+      return;
+    }
+
+    // Keeping client connection object if not exists.
+    clientsBySessionId[requestSessionId] =
+      clientsBySessionId[requestSessionId] ?? {};
+
+    clientsBySessionId[requestSessionId][message.playerId] =
+      clientsBySessionId[requestSessionId][message.playerId] ?? client;
+
+    broadcast(requestSessionId, JSON.stringify(message));
   }
 
   // Set up client event listeners:
@@ -69,8 +79,7 @@ function handleConnection(client, request) {
 function broadcast(sessionId, data) {
   console.log("BROADCAST", sessionId, data);
   // Iterate over the array of clients & send data to each.
-  let playerIds = clientsBySessionId[sessionId];
-  for (playerId in playerIds) {
+  for (const playerId in clientsBySessionId[sessionId]) {
     console.log("SEND", `${data} to '${playerId}'`);
     clientsBySessionId[sessionId][playerId].send(data);
   }
@@ -132,8 +141,8 @@ let httpServer = http
           response.writeHead(500);
           response.end(
             "Sorry, check with the site admin for error: " +
-            error.code +
-            " ..\n"
+              error.code +
+              " ..\n"
           );
           response.end();
         }
@@ -153,8 +162,8 @@ httpServer.on("upgrade", function upgrade(request, socket, head) {
     request,
     socket,
     head,
-    function done(ws) {
-      websocketServerInstance.emit("connection", ws, request);
+    function done(client) {
+      websocketServerInstance.emit("connection", client, request);
     }
   );
 });

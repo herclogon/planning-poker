@@ -3,10 +3,10 @@
   const OPEN_DELAY = 3;
 
   // If URL doesn't contain a session id - generate a new one then redirect.
-  const SESSION_ID = window.location.pathname;
-  if (SESSION_ID === "/" || SESSION_ID === "") {
-    let newSessionId = uuidv4();
-    window.location.href = `${window.location.origin}/${newSessionId}`;
+  const sessionId = window.location.pathname;
+  if (sessionId === "/" || sessionId === "") {
+    let sessionId = uuidv4();
+    window.location.href = `${window.location.origin}/${sessionId}`;
   }
 
   MESSAGE_TYPE = {
@@ -96,7 +96,7 @@
       let connect = () => {
         let schema = window.location.protocol === "https:" ? "wss" : "ws";
         this.socket = new WebSocket(
-          `${schema}://${window.location.hostname}:${window.location.port}`
+          `${schema}://${window.location.hostname}:${window.location.port}${window.location.pathname}`
         );
 
         this.socket.addEventListener("error", (event) => {
@@ -130,18 +130,9 @@
             this.socket.send(msg);
           }, 5000);
 
-          let msg = JSON.stringify({
-            sessionId: SESSION_ID,
-            type: MESSAGE_TYPE.STATE,
-            playerName: this.playerName,
-            playerId: this.playerId,
-            vote: this.vote,
-          });
-          this.socket.send(msg);
-          console.log("<-- send message", msg);
 
           msg = JSON.stringify({
-            sessionId: SESSION_ID,
+            playerId: this.playerId,
             type: MESSAGE_TYPE.STATE_REQUEST,
           });
           this.socket.send(msg);
@@ -156,7 +147,6 @@
           if (message.type === MESSAGE_TYPE.STATE_REQUEST) {
             this.socket.send(
               JSON.stringify({
-                sessionId: SESSION_ID,
                 type: MESSAGE_TYPE.STATE,
                 playerId: this.playerId,
                 playerName: this.playerName,
@@ -247,7 +237,6 @@
 
             this.socket.send(
               JSON.stringify({
-                sessionId: SESSION_ID,
                 type: MESSAGE_TYPE.STATE,
                 playerName: this.playerName,
                 playerId: this.playerId,
@@ -266,7 +255,6 @@
         this.vote = vote;
         this.socket.send(
           JSON.stringify({
-            sessionId: SESSION_ID,
             type: MESSAGE_TYPE.STATE,
             playerName: this.playerName,
             playerId: this.playerId,
@@ -285,7 +273,6 @@
 
         this.socket.send(
           JSON.stringify({
-            sessionId: SESSION_ID,
             type: MESSAGE_TYPE.STATE,
             playerName: this.playerName,
             playerId: this.playerId,
@@ -297,7 +284,7 @@
       onRevealCards() {
         this.socket.send(
           JSON.stringify({
-            sessionId: SESSION_ID,
+            playerId: this.playerId,
             type: MESSAGE_TYPE.REVEAL_CARDS,
           })
         );
@@ -306,7 +293,7 @@
       onStartNewVoting() {
         this.socket.send(
           JSON.stringify({
-            sessionId: SESSION_ID,
+            playerId: this.playerId,
             type: MESSAGE_TYPE.RENEW_GAME,
           })
         );
