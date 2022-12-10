@@ -118,15 +118,12 @@
         });
 
         this.socket.addEventListener("open", (event) => {
-          console.log("WebSocket connection is open.", event);
-
           // Init backend auto-ping, to keep connectoion alive.
           this.keepAliveEmitter = setInterval(() => {
             let msg = JSON.stringify({
               type: MESSAGE_TYPE.PING,
               playerId: this.playerId,
             });
-            console.log("<-- send message", msg);
             this.socket.send(msg);
           }, 5000);
 
@@ -136,11 +133,9 @@
             type: MESSAGE_TYPE.STATE_REQUEST,
           });
           this.socket.send(msg);
-          console.log(msg);
         });
 
         this.socket.addEventListener("message", (messageEvent) => {
-          console.log("--> get message", messageEvent.data);
           let message = JSON.parse(messageEvent.data);
 
           // If another player requested our STATE - send it.
