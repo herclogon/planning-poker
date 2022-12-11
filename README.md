@@ -25,3 +25,7 @@ docker run -e HTTP_PORT=8080 -p 8080:8080 herclogon/poker:latest
 npm ci
 npm start
 ```
+
+## Helpful resources
+
+* [Planning poker solutions comparison](https://pmclub.pro/articles/kak-my-iskali-nash-idealnyj-instrument-dlya-poker-planirovaniya)
