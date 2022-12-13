@@ -1,0 +1,27 @@
+{
+  "name": "Planning poker",
+  "short_name": "Planning poker",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#fdfdfd",
+  "theme_color": "#db4938",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon_32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon_96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

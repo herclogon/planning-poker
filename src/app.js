@@ -127,7 +127,6 @@
             this.socket.send(msg);
           }, 5000);
 
-
           msg = JSON.stringify({
             playerId: this.playerId,
             type: MESSAGE_TYPE.STATE_REQUEST,
@@ -220,8 +219,8 @@
             }, 1000);
           }
 
-          // If a RENEW_GAME message is received, close all cards, reset our 
-          // vote, re-new card variants and send our new STATE to the other 
+          // If a RENEW_GAME message is received, close all cards, reset our
+          // vote, re-new card variants and send our new STATE to the other
           // players.
           if (message.type === MESSAGE_TYPE.RENEW_GAME) {
             this.isCardsOpen = false;
@@ -308,6 +307,16 @@
       },
     },
   };
+
+  // Register service worker to use the app as PWA.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker
+        .register("/service-worker.js", { scope: window.location.href })
+        .then((res) => console.log("service worker registered"))
+        .catch((err) => console.log("service worker not registered", err));
+    });
+  }
 
   // Required for the right Vue template initialization.
   setTimeout(() => {
