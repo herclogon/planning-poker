@@ -4,7 +4,7 @@
 
 Inspired by https://planningpokeronline.com/
 
-Hosted as: https://planningpoker.tk/
+Hosted as: http://poker.hsdesign.ru/
 
 Source: https://git.dev.hsdesign.ru/public/planning-poker
 
