@@ -2,9 +2,9 @@
 
 ![image](https://user-images.githubusercontent.com/884844/153072383-05f552d5-4d98-4fca-aa6c-eb316af26a9b.png)
 
-Inspired by https://planningpokeronline.com/
+Inspired by: https://planningpokeronline.com/
 
-Hosted as: http://poker.hsdesign.ru/
+Hosted as: https://poker.hsdesign.ru/
 
 Source: https://git.dev.hsdesign.ru/public/planning-poker
 
