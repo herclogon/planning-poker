@@ -28,4 +28,4 @@ npm start
 
 ## Helpful resources
 
-* [Planning poker solutions comparison](https://pmclub.pro/articles/kak-my-iskali-nash-idealnyj-instrument-dlya-poker-planirovaniya)
+* [Planning poker solutions comparison](https://pmclub-pro.translate.goog/articles/kak-my-iskali-nash-idealnyj-instrument-dlya-poker-planirovaniya?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en-US&_x_tr_pto=wapp)
