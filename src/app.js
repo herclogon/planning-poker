@@ -60,6 +60,8 @@
         variants: [...randomVariants(), "?"],
         vote: null,
         averageScore: 0,
+        connectionStatus: "disconnected",
+        connectionStatusText: "Disconnected",
       };
     },
     mounted() {
@@ -101,6 +103,8 @@
 
         this.socket.addEventListener("error", (event) => {
           console.error("WebSocket error", event);
+          this.connectionStatus = "disconnected";
+          this.connectionStatusText = "Connection Error";
         });
 
         // Trying to re-reconnect each time on disconnect.
@@ -110,14 +114,21 @@
 
             // Trying to reconnect.
             setTimeout(() => {
+              this.connectionStatus = "connecting";
+              this.connectionStatusText = "Reconnecting...";
               connect();
             }, 1000);
           }
 
+          this.connectionStatus = "disconnected";
+          this.connectionStatusText = "Disconnected";
           console.error("WebSocket connection is closed.", event);
         });
 
         this.socket.addEventListener("open", (event) => {
+          this.connectionStatus = "connected";
+          this.connectionStatusText = "Connected";
+          
           // Init backend auto-ping, to keep connectoion alive.
           this.keepAliveEmitter = setInterval(() => {
             let msg = JSON.stringify({

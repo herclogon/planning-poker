@@ -320,3 +320,41 @@ body {
   opacity: 0;
   top: 0px;
 }
+
+.app__navbar_right {
+  width: 16rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 1rem;
+}
+
+.app__connection-status {
+  display: block;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.4rem;
+  color: #666;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.app__connection-status_indicator {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.app__connection-status_indicator.connected {
+  background-color: #4CAF50;
+}
+
+.app__connection-status_indicator.disconnected {
+  background-color: #f44336;
+}
+
+.app__connection-status_indicator.connecting {
+  background-color: #FFC107;
+}
