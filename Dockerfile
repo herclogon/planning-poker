@@ -25,7 +25,10 @@ ADD package-lock.json ${INSTALL_DIR}/
 
 RUN : "Installing application dependencies..."
 WORKDIR ${INSTALL_DIR}
-RUN bash -c 'source ~/.nvm/nvm.sh; npm ci'
+# `--omit=dev` is not honored by the bundled npm here, so the dev-only test
+# framework (Playwright) is stripped explicitly to keep the runtime image lean.
+RUN bash -c 'source ~/.nvm/nvm.sh; npm ci --omit=dev \
+    && rm -rf node_modules/@playwright node_modules/playwright node_modules/playwright-core'
 
 EXPOSE ${HTTP_PORT}
 ENTRYPOINT  bash -c 'source ~/.nvm/nvm.sh; npm start'
