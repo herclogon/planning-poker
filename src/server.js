@@ -96,8 +96,17 @@ var path = require("path");
 let httpServer = http
   .createServer(function (request, response) {
     var webRoot = __dirname;
-    var filePath = webRoot + request.url;
-    if (filePath == webRoot + "/") filePath = webRoot + "/index.html";
+    // Strip the query string and resolve the path, keeping it inside webRoot
+    // to prevent directory traversal (e.g. `/../server.js`).
+    var urlPath = decodeURIComponent(request.url.split("?")[0]);
+    var filePath = path.join(webRoot, path.normalize(urlPath));
+    if (filePath !== webRoot && !filePath.startsWith(webRoot + path.sep)) {
+      response.writeHead(403);
+      response.end("Forbidden");
+      return;
+    }
+    if (filePath === webRoot || filePath === webRoot + path.sep)
+      filePath = path.join(webRoot, "index.html");
 
     var extname = path.extname(filePath);
     var contentType = "text/html; charset=utf-8";
@@ -134,7 +143,9 @@ let httpServer = http
           // If file is not found send the default page instead.
           // Uses to handle URLs like <origin>/<session_id>.
           fs.readFile(webRoot + "/index.html", function (error, content) {
-            response.writeHead(200, { "Content-Type": contentType });
+            response.writeHead(200, {
+              "Content-Type": "text/html; charset=utf-8",
+            });
             response.end(content, "utf-8");
           });
         } else {

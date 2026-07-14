@@ -5,11 +5,11 @@
   // Text estimates used in the "time" voting mode (ordered from the
   // most optimistic to the most pessimistic one).
   const TIME_VARIANTS = [
-    "Полдня",
-    "День-два",
-    "До недели",
-    "До двух недель",
-    "Слишком долго",
+    "Half a day",
+    "A day or two",
+    "Up to a week",
+    "Up to two weeks",
+    "Too long",
   ];
 
   // If URL doesn't contain a session id - generate a new one then redirect.
@@ -19,7 +19,7 @@
     window.location.href = `${window.location.origin}/${sessionId}`;
   }
 
-  MESSAGE_TYPE = {
+  const MESSAGE_TYPE = {
     STATE_REQUEST: "state_request",
     STATE: "state",
     REVEAL_CARDS: "reveal_cards",
@@ -49,7 +49,7 @@
     const zip = (rows) => rows[0].map((_, c) => rows.map((row) => row[c]));
     const randomInt = (lowerBound, upperBound) =>
       Math.ceil(Math.random() * (upperBound - lowerBound) + lowerBound);
-    bounds = zip([ranges.slice(1), ranges]);
+    const bounds = zip([ranges.slice(1), ranges]);
     let lb, ub;
     for (let bound of bounds) {
       [ub, lb] = bound;
@@ -170,7 +170,7 @@
             this.socket.send(msg);
           }, 5000);
 
-          msg = JSON.stringify({
+          const msg = JSON.stringify({
             playerId: this.playerId,
             type: MESSAGE_TYPE.STATE_REQUEST,
           });
@@ -254,7 +254,7 @@
                       let content = "";
                       for (let card of this.cards) {
                         let playerName = card.playerName.toLowerCase();
-                        playerName = playerName.replace(" ", ".");
+                        playerName = playerName.replaceAll(" ", ".");
                         let vote = card.vote ?? "?";
                         content += `* @${playerName}: ${vote}\n`;
                       }
@@ -371,7 +371,7 @@
           }
         }
 
-        return Math.round(count ? score / count : 0, 1);
+        return count ? Math.round((score / count) * 10) / 10 : 0;
       },
 
       // Most frequent time estimate. Ties are resolved towards the more

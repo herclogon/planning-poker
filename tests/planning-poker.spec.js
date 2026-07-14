@@ -37,14 +37,14 @@ test.describe("voting modes", () => {
     await join(page, "e2e-time-basic");
 
     // All five ordered estimates are offered.
-    await expect(timeCard(page, "Полдня")).toBeVisible();
-    await expect(timeCard(page, "Слишком долго")).toBeVisible();
+    await expect(timeCard(page, "Half a day")).toBeVisible();
+    await expect(timeCard(page, "Too long")).toBeVisible();
 
-    await timeCard(page, "До недели").click();
+    await timeCard(page, "Up to a week").click();
     await revealButton(page).click();
 
     await expect(avrScore(page)).toContainText("Consensus:");
-    await expect(avrScore(page)).toContainText("До недели");
+    await expect(avrScore(page)).toContainText("Up to a week");
   });
 
   test("consensus breaks ties toward the more pessimistic estimate", async ({
@@ -56,8 +56,8 @@ test.describe("voting modes", () => {
     await join(a.page, session);
     await join(b.page, session);
 
-    await timeCard(a.page, "Полдня").click();
-    await timeCard(b.page, "До недели").click();
+    await timeCard(a.page, "Half a day").click();
+    await timeCard(b.page, "Up to a week").click();
 
     // Wait until Alice has received Bob's card before revealing (each card is
     // rendered twice — once in the top row, once in the bottom row).
@@ -67,8 +67,8 @@ test.describe("voting modes", () => {
 
     await revealButton(a.page).click();
 
-    // 1 vs 1 tie between "Полдня" and "До недели" -> the more pessimistic wins.
-    await expect(avrScore(a.page)).toContainText("До недели");
+    // 1 vs 1 tie between "Half a day" and "Up to a week" -> the more pessimistic wins.
+    await expect(avrScore(a.page)).toContainText("Up to a week");
   });
 });
 
@@ -83,12 +83,12 @@ test.describe("mode synchronization", () => {
     await join(b.page, session);
 
     // Both start in numbers mode: no time estimate is present yet.
-    await expect(timeCard(b.page, "До недели")).toHaveCount(0);
+    await expect(timeCard(b.page, "Up to a week")).toHaveCount(0);
 
     await modeButton(a.page, "time").click();
 
     // Bob adopts the time mode broadcast by Alice.
-    await expect(timeCard(b.page, "До недели")).toBeVisible();
+    await expect(timeCard(b.page, "Up to a week")).toBeVisible();
     await expect(modeButton(b.page, "time")).toHaveClass(/active/);
   });
 
@@ -98,13 +98,13 @@ test.describe("mode synchronization", () => {
     await join(a.page, session);
 
     await modeButton(a.page, "time").click();
-    await expect(timeCard(a.page, "Полдня")).toBeVisible();
+    await expect(timeCard(a.page, "Half a day")).toBeVisible();
 
     // Bob joins only after the switch and should still land in time mode.
     const b = await newClient(browser, { name: "Bob", id: "bob" });
     await join(b.page, session);
 
-    await expect(timeCard(b.page, "Полдня")).toBeVisible();
+    await expect(timeCard(b.page, "Half a day")).toBeVisible();
     await expect(modeButton(b.page, "time")).toHaveClass(/active/);
   });
 
@@ -115,12 +115,12 @@ test.describe("mode synchronization", () => {
     await join(a.page, session);
     await join(b.page, session);
 
-    await expect(timeCard(a.page, "Полдня")).toBeVisible();
+    await expect(timeCard(a.page, "Half a day")).toBeVisible();
 
     await modeButton(b.page, "numbers").click();
 
     // Alice leaves time mode: the time estimates disappear for her.
-    await expect(timeCard(a.page, "Полдня")).toHaveCount(0);
+    await expect(timeCard(a.page, "Half a day")).toHaveCount(0);
     await expect(modeButton(a.page, "numbers")).toHaveClass(/active/);
   });
 });
@@ -143,7 +143,7 @@ test.describe("guards and hidden controls", () => {
     });
     await join(page, "e2e-guard-countdown");
 
-    await timeCard(page, "Полдня").click();
+    await timeCard(page, "Half a day").click();
     await revealButton(page).click();
 
     // While the 3s countdown runs the toggle stays visible but disabled.

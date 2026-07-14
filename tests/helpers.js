@@ -4,11 +4,11 @@ const { expect } = require("@playwright/test");
 // The five ordered time estimates, mirroring TIME_VARIANTS in src/app.js
 // (from the most optimistic to the most pessimistic one).
 const TIME_VARIANTS = [
-  "Полдня",
-  "День-два",
-  "До недели",
-  "До двух недель",
-  "Слишком долго",
+  "Half a day",
+  "A day or two",
+  "Up to a week",
+  "Up to two weeks",
+  "Too long",
 ];
 
 /**
