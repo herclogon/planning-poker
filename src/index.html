@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html style="font-size: 62.5%">
   <head>
+    <meta charset="utf-8" />
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="apple-touch-icon" href="favicon_96x96.png">
@@ -35,10 +36,11 @@
           >
             <div
               :class="
-                { 
-                    'app__table-card_back': card.vote && !isCardsOpen, 
+                {
+                    'app__table-card_back': card.vote && !isCardsOpen,
                     'app__table-card_face': card.vote === null || isCardsOpen,
-                    'app__table-card_open': card.vote && isCardsOpen
+                    'app__table-card_open': card.vote && isCardsOpen,
+                    'app__table-card_text': isCardsOpen && isTextVote(card.vote)
                 }"
             >
               <span v-if="isCardsOpen && card.vote">{{ card.vote }}</span>
@@ -82,10 +84,11 @@
           >
             <div
               :class="
-            { 
-                'app__table-card_back': card.vote && !isCardsOpen, 
+            {
+                'app__table-card_back': card.vote && !isCardsOpen,
                 'app__table-card_face': card.vote === null || isCardsOpen,
-                'app__table-card_open': card.vote && isCardsOpen
+                'app__table-card_open': card.vote && isCardsOpen,
+                'app__table-card_text': isCardsOpen && isTextVote(card.vote)
             }"
             >
               <span v-if="isCardsOpen && card.vote">{{ card.vote }}</span>
@@ -96,25 +99,100 @@
         <div>&nbsp;</div>
       </div>
       <div v-if="isCardsOpen" class="app__avr-score">
-        Average: {{ averageScore }}
+        {{ result.label }}: {{ result.value }}
         <button class="app__clipboard-btn">
           <img src="assets/clipboard.svg" alt="Copy to clipboard" />
         </button>
       </div>
 
       <div v-if="!isCardsOpen" class="app__cards-selector">
+        <div class="app__cards-selector_header">
+          <div class="app__mode-toggle">
+            <button
+              :class="{ active: mode === 'numbers' }"
+              :disabled="openDelayCounter > 0"
+              @click="onSetMode('numbers')"
+              title="Numbers"
+            >
+              123
+            </button>
+            <button
+              :class="{ active: mode === 'time' }"
+              :disabled="openDelayCounter > 0"
+              @click="onSetMode('time')"
+              title="Time estimates"
+            >
+              ⏱
+            </button>
+          </div>
+          <button
+            v-if="mode === 'numbers' && allowEditVariants"
+            class="app__edit-values-btn"
+            @click="onEditValues()"
+          >
+            <img src="assets/edit.svg" alt="Edit values" />
+          </button>
+        </div>
         <ul class="app__cards-selector_list">
           <li class="app__player-card" v-for="variant in variants">
             <button
               class="app__player-card_button"
               translate="no"
               @click="onVote(variant)"
-              :class="{ 'app__player-card_button_selected': variant === vote }"
+              :class="{
+                'app__player-card_button_selected': variant === vote,
+                'app__player-card_button_text': isTextVote(variant)
+              }"
             >
               <span>{{ variant }}</span>
             </button>
           </li>
         </ul>
+      </div>
+
+      <!-- Edit Values Modal -->
+      <div v-if="showEditModal" class="app__modal-overlay" @click="onCloseModal()">
+        <div class="app__modal" @click.stop>
+          <h2>Edit Card Values</h2>
+          <div class="app__modal-content">
+            <div v-for="(value, index) in editValues" :key="index" class="app__modal-input-group">
+              <input 
+                type="text" 
+                v-model="editValues[index]" 
+                :placeholder="'Value ' + (index + 1)"
+                @keyup.enter="onSaveValues()"
+              />
+              <button class="app__modal-remove-btn" @click="onRemoveValue(index)" v-if="editValues.length > 1">×</button>
+            </div>
+            <button class="app__modal-add-btn" @click="onAddValue()">+ Add Value</button>
+          </div>
+          <div class="app__modal-actions">
+            <button class="app__modal-cancel-btn" @click="onCloseModal()">Cancel</button>
+            <button class="app__modal-save-btn" @click="onSaveValues()">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rename Modal -->
+      <div v-if="showRenameModal" class="app__modal-overlay" @click="onCloseRenameModal()">
+        <div class="app__modal" @click.stop>
+          <h2>Change Your Name</h2>
+          <div class="app__modal-content">
+            <div class="app__modal-input-group">
+              <input 
+                type="text" 
+                v-model="newPlayerName" 
+                placeholder="Enter your name"
+                @keyup.enter="onSaveRename()"
+                ref="renameInput"
+              />
+            </div>
+          </div>
+          <div class="app__modal-actions">
+            <button class="app__modal-cancel-btn" @click="onCloseRenameModal()">Cancel</button>
+            <button class="app__modal-save-btn" @click="onSaveRename()">Save</button>
+          </div>
+        </div>
       </div>
     </div>
   </body>

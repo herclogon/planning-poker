@@ -100,19 +100,19 @@ let httpServer = http
     if (filePath == webRoot + "/") filePath = webRoot + "/index.html";
 
     var extname = path.extname(filePath);
-    var contentType = "text/html";
+    var contentType = "text/html; charset=utf-8";
     switch (extname) {
       case ".ico":
         contentType = "image/x-icon";
         break;
       case ".js":
-        contentType = "text/javascript";
+        contentType = "text/javascript; charset=utf-8";
         break;
       case ".css":
-        contentType = "text/css";
+        contentType = "text/css; charset=utf-8";
         break;
       case ".json":
-        contentType = "application/json";
+        contentType = "application/json; charset=utf-8";
         break;
       case ".png":
         contentType = "image/png";

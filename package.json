@@ -4,7 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
   },
   "repository": {
     "type": "git",
@@ -20,5 +22,8 @@
     "eslint": "^8.8.0",
     "websocket": "^1.0.34",
     "ws": "^8.4.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
   }
 }
